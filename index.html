@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QR코드 & URL단축 올인원 웹 앱</title>
+  <!-- Pretendard Font -->
+  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
+  <link rel="stylesheet" href="urlShort/style.css">
+  <style>
+    /* Portal Custom Styles */
+    .portal-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2.5rem;
+      width: 100%;
+      max-width: 900px;
+    }
+    .portal-cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 1.75rem;
+      width: 100%;
+    }
+    .portal-card {
+      background: var(--surface);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1.5px solid var(--border-light);
+      border-radius: var(--radius-lg);
+      padding: 2.25rem 2rem;
+      box-shadow: var(--shadow-lg);
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      text-decoration: none;
+      color: inherit;
+      transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+      overflow: hidden;
+    }
+    .portal-card:hover {
+      transform: translateY(-6px);
+      border-color: var(--brand-amber);
+      box-shadow: 0 20px 40px -10px rgba(245, 158, 11, 0.25);
+    }
+    .portal-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: var(--primary-gradient);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    .portal-card:hover::before {
+      opacity: 1;
+    }
+    .card-icon-bubble {
+      width: 56px;
+      height: 56px;
+      border-radius: 18px;
+      background: var(--primary-badge-bg);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--brand-amber);
+      margin-bottom: 1.5rem;
+      box-shadow: 0 4px 12px rgba(245, 158, 11, 0.15);
+      transition: transform 0.3s ease;
+    }
+    .portal-card:hover .card-icon-bubble {
+      transform: scale(1.08) rotate(3deg);
+    }
+    .card-icon-bubble svg {
+      width: 28px;
+      height: 28px;
+    }
+    .portal-card-title {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--text-main);
+      margin-bottom: 0.6rem;
+      letter-spacing: -0.02em;
+    }
+    .portal-card-desc {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+      margin-bottom: 1.75rem;
+      flex-grow: 1;
+    }
+    .portal-card-action {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--brand-dark);
+      padding: 10px 20px;
+      background: var(--primary-gradient);
+      border-radius: var(--radius-full);
+      box-shadow: 0 3px 12px rgba(245, 158, 11, 0.28);
+      transition: transform 0.2s ease;
+    }
+    .portal-card:hover .portal-card-action {
+      transform: translateX(4px);
+    }
+    .portal-card-action svg {
+      width: 16px;
+      height: 16px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Interactive Dynamic Gradient Background -->
+  <div class="interactive-bg" id="interactiveBg" aria-hidden="true">
+    <div class="gradient-layer-base"></div>
+    <div class="gradient-orb orb-1"></div>
+    <div class="gradient-orb orb-2"></div>
+    <div class="gradient-orb orb-3"></div>
+    <div class="cursor-glow" id="cursorGlow"></div>
+  </div>
+
+  <!-- Header -->
+  <header class="app-header">
+    <div class="logo-wrapper" id="logoBtn" role="button" tabindex="0" title="홈으로">
+      <img src="img/logo.png" alt="서비스 로고" class="logo-img" id="appLogo">
+    </div>
+
+    <!-- 1 & 2 & 3: QR코드 & URL단축 네비게이션 버튼 -->
+    <nav class="nav-switch-group" aria-label="메인 기능 메뉴">
+      <a href="url2qr/index.html" class="nav-btn" id="btnNavQR" title="QR코드 생성기로 이동">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+          <rect x="3" y="3" width="7" height="7"></rect>
+          <rect x="14" y="3" width="7" height="7"></rect>
+          <rect x="3" y="14" width="7" height="7"></rect>
+          <circle cx="17.5" cy="17.5" r="2.5"></circle>
+        </svg>
+        <span>QR코드</span>
+      </a>
+      <a href="urlShort/index.html" class="nav-btn" id="btnNavShort" title="URL 단축기로 이동">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+          <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+          <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+        </svg>
+        <span>URL단축</span>
+      </a>
+    </nav>
+
+    <div class="header-right">
+      <span class="badge-tag" style="margin-bottom: 0;">통합 웹 앱 v1.0</span>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="app-main">
+    <div class="portal-container">
+      
+      <!-- Hero -->
+      <section class="hero-section">
+        <div class="badge-tag">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+          </svg>
+          <span>링크 & QR코드 토탈 솔루션</span>
+        </div>
+        <h1 class="hero-title">원하는 기능을 선택해 보세요</h1>
+        <p class="hero-desc">웹 링크를 고화질 QR코드로 생성하거나, OpenAPI 기반으로 긴 주소를 깔끔하게 줄여보세요.</p>
+      </section>
+
+      <!-- Portal Feature Cards -->
+      <section class="portal-cards-grid">
+        <!-- 2. QR코드 카드 -> [url2qr] 폴더 index.html 연결 -->
+        <a href="url2qr/index.html" class="portal-card" id="cardUrl2Qr">
+          <div class="card-icon-bubble">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="7" height="7"></rect>
+              <rect x="14" y="3" width="7" height="7"></rect>
+              <rect x="3" y="14" width="7" height="7"></rect>
+              <circle cx="17.5" cy="17.5" r="2.5"></circle>
+            </svg>
+          </div>
+          <h2 class="portal-card-title">QR코드 생성기</h2>
+          <p class="portal-card-desc">웹사이트 주소나 텍스트를 즉시 고화질 QR코드로 변환하고 JPG 이미지 파일로 다운로드할 수 있습니다.</p>
+          <div class="portal-card-action">
+            <span>QR코드 만들기</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </div>
+        </a>
+
+        <!-- 3. URL단축 카드 -> [urlShort] 폴더 index.html 연결 -->
+        <a href="urlShort/index.html" class="portal-card" id="cardUrlShort">
+          <div class="card-icon-bubble">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+              <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+            </svg>
+          </div>
+          <h2 class="portal-card-title">URL 단축기</h2>
+          <p class="portal-card-desc">OpenAPI를 연동하여 복잡하고 긴 주소를 짧고 간결한 링크로 즉시 변환하고 클립보드에 바로 복사합니다.</p>
+          <div class="portal-card-action">
+            <span>URL 단축하기</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </div>
+        </a>
+      </section>
+
+    </div>
+  </main>
+
+  <script>
+    // Simple interactive background tracker
+    const root = document.documentElement;
+    let targetX = window.innerWidth / 2;
+    let targetY = window.innerHeight * 0.4;
+    let currentX = targetX;
+    let currentY = targetY;
+
+    window.addEventListener('mousemove', (e) => {
+      targetX = e.clientX;
+      targetY = e.clientY;
+    }, { passive: true });
+
+    function updateGradientFrame() {
+      currentX += (targetX - currentX) * 0.08;
+      currentY += (targetY - currentY) * 0.08;
+      const width = window.innerWidth || 1920;
+      const height = window.innerHeight || 1080;
+      const percentX = (currentX / width * 100).toFixed(2);
+      const percentY = (currentY / height * 100).toFixed(2);
+      root.style.setProperty('--mouse-x', `${percentX}%`);
+      root.style.setProperty('--mouse-y', `${percentY}%`);
+      root.style.setProperty('--cursor-x', `${currentX.toFixed(1)}px`);
+      root.style.setProperty('--cursor-y', `${currentY.toFixed(1)}px`);
+      requestAnimationFrame(updateGradientFrame);
+    }
+    requestAnimationFrame(updateGradientFrame);
+  </script>
+</body>
+</html>

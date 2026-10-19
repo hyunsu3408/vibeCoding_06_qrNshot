@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QR코드 생성기 - 간편한 URL QR 변환</title>
+  <!-- Pretendard Font -->
+  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Interactive Dynamic Gradient Background -->
+  <div class="interactive-bg" id="interactiveBg" aria-hidden="true">
+    <div class="gradient-layer-base"></div>
+    <div class="gradient-orb orb-1"></div>
+    <div class="gradient-orb orb-2"></div>
+    <div class="gradient-orb orb-3"></div>
+    <div class="cursor-glow" id="cursorGlow"></div>
+  </div>
+
+  <!-- Header: Top Left Logo -->
+  <header class="app-header">
+    <div class="logo-wrapper" id="logoBtn" role="button" tabindex="0" title="처음으로 이동">
+      <img src="img/logo.png" alt="서비스 로고" class="logo-img" id="appLogo">
+    </div>
+
+    <!-- Service Switch Navigation (QR코드 & URL단축) -->
+    <nav class="nav-switch-group" aria-label="서비스 전환">
+      <a href="index.html" class="nav-btn active" title="QR코드 생성기 (현재)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+          <rect x="3" y="3" width="7" height="7"></rect>
+          <rect x="14" y="3" width="7" height="7"></rect>
+          <rect x="3" y="14" width="7" height="7"></rect>
+          <circle cx="17.5" cy="17.5" r="2.5"></circle>
+        </svg>
+        <span>QR코드</span>
+      </a>
+      <a href="../urlShort/index.html" class="nav-btn" title="URL 단축 서비스로 이동">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+          <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+          <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+        </svg>
+        <span>URL단축</span>
+      </a>
+    </nav>
+
+    <div class="header-right">
+      <button type="button" class="btn-text-action" id="btnReset" style="display: none;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+          <path d="M3 3v5h5"></path>
+        </svg>
+        <span>새로 만들기</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="app-main" id="appMain">
+    <div class="content-wrapper">
+      
+      <!-- QR Result Section (Center of Screen when generated) -->
+      <section class="qr-display-section" id="qrDisplaySection" aria-label="생성된 QR코드 영역">
+        <div class="qr-card" id="qrCard" role="button" tabindex="0" aria-label="QR코드 클릭 시 JPG 다운로드">
+          <div class="card-hint-badge">
+            <svg class="hint-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            <span>QR코드를 클릭하면 JPG 파일로 다운로드됩니다</span>
+          </div>
+
+          <div class="qr-frame" id="qrFrame">
+            <div id="qrcode"></div>
+            <div class="qr-click-overlay">
+              <div class="overlay-content">
+                <div class="overlay-icon-circle">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                  </svg>
+                </div>
+                <span class="overlay-text">JPG 다운로드</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- URL Info & Download Action Button -->
+          <div class="qr-info-footer">
+            <div class="url-badge" id="targetUrlBadge" title="입력된 URL">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+              </svg>
+              <span class="url-text" id="targetUrlText"></span>
+            </div>
+
+            <button type="button" class="btn-download-action" id="btnDownload">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+              </svg>
+              <span>JPG 파일 다운로드</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- URL Input Section (Initial: Center -> After: Bottom) -->
+      <section class="url-input-section" id="urlInputSection">
+        <div class="intro-box" id="introBox">
+          <h1 class="hero-title">웹사이트 URL을 QR코드로 만들어보세요</h1>
+          <p class="hero-desc">주소를 입력하고 확인을 누르면 정중앙에 고화질 QR코드가 바로 완성됩니다.</p>
+        </div>
+
+        <form class="url-form" id="urlForm" onsubmit="return false;">
+          <div class="input-card" id="inputCard">
+            <div class="input-icon-box">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="2" y1="12" x2="22" y2="12"></line>
+                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+              </svg>
+            </div>
+            <input 
+              type="text" 
+              id="urlInput" 
+              class="url-field" 
+              placeholder="URL을 입력하세요 (예: https://example.com)" 
+              autocomplete="off" 
+              autofocus 
+              spellcheck="false"
+            >
+            <button type="button" class="btn-clear-input" id="btnClearInput" title="입력 지우기" aria-label="입력 지우기">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+            <button type="submit" class="btn-submit" id="btnSubmit">
+              <span>확인</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="9 18 15 12 9 6"></polyline>
+              </svg>
+            </button>
+          </div>
+          <div class="input-message" id="inputMessage"></div>
+        </form>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- Toast Notification -->
+  <div class="toast-container" id="toastContainer">
+    <div class="toast-pill" id="toastPill">
+      <svg class="toast-check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+      </svg>
+      <span class="toast-text" id="toastText">JPG 파일이 다운로드되었습니다!</span>
+    </div>
+  </div>
+
+  <!-- QR Code Generator Library -->
+  <script src="js/qrcode.min.js"></script>
+  <!-- Fallback to CDN if local file fails to load -->
+  <script>
+    if (typeof QRCode === 'undefined') {
+      document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"><\/script>');
+    }
+  </script>
+  <script src="script.js"></script>
+</body>
+</html>
